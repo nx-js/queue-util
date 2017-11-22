@@ -71,6 +71,6 @@ function processIdleQueue (queue, startTime) {
   }
 }
 
-function runTask (task) {
+export function runTask (task) {
   task()
 }

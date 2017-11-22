@@ -1,5 +1,5 @@
 import { queues, priorities, validatePriority } from './priorities'
-import { queueTaskProcessing } from './processing'
+import { queueTaskProcessing, runTask } from './processing'
 
 const QUEUE = Symbol('task queue')
 
@@ -35,6 +35,7 @@ export class Queue {
     if (priorityQueues.indexOf(queue) === -1) {
       priorityQueues.push(queue)
     }
+    queueTaskProcessing(this.priority)
   }
 
   stop () {

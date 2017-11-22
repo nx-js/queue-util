@@ -2,6 +2,15 @@ const HEAVY_INTERVAL = 10
 const originalRAF = window.requestAnimationFrame
 const originalRIC = window.requestIdleCallback
 
+export function spy (fn) {
+  const spyFn = () => {
+    fn()
+    spyFn.callCount++
+  }
+  spyFn.callCount = 0
+  return spyFn
+}
+
 export function beforeNextFrame () {
   const nextFrame = (typeof requestAnimationFrame === 'function')
     ? requestAnimationFrame

@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { beforeNextFrame, heavyCalculation } from './utils'
 import { Queue, priorities } from '@nx-js/queue-util'
 
-describe('Queue processing', () => {
+describe('priorities and processing', () => {
   it('should run all critical tasks before the next frame', async () => {
     let runs = 0
     const queue = new Queue(priorities.CRITICAL)
@@ -57,5 +57,23 @@ describe('Queue processing', () => {
     expect(criticalRuns).to.equal(10)
     expect(highRuns).to.equal(10)
     expect(lowRuns).to.equal(10)
+  })
+
+  it('should process non critical tasks in chunks to achieve 60 fps', async () => {
+    const lowQueue = new Queue(priorities.LOW)
+    const highQueue = new Queue(priorities.HIGH)
+
+    for (let i = 0; i < 10; i++) {
+      highQueue.add(() => heavyCalculation())
+      lowQueue.add(() => heavyCalculation())
+    }
+
+    const start = Date.now()
+    await beforeNextFrame()
+    expect(highQueue.size).to.not.eql(0)
+    expect(lowQueue.size).to.eql(10)
+    await lowQueue.processing()
+    expect(highQueue.size).to.eql(0)
+    expect(lowQueue.size).to.eql(0)
   })
 })

@@ -1,11 +1,16 @@
 let nextTickQueued = false
+let nextFrameQueued = false
 let nextIdlePeriodQueued = false
 
 const promise = Promise.resolve()
-const requestIdlePeriod =
-  typeof requestAnimationFrame !== 'undefined'
+const requestFrame =
+  typeof requestAnimationFrame === 'function'
     ? requestAnimationFrame
     : setTimeout
+const requestIdlePeriod =
+  typeof requestIdleCallback === 'function'
+    ? requestIdleCallback
+    : requestFrame
 
 export function nextTick (task) {
   if (!nextTickQueued) {
@@ -15,6 +20,17 @@ export function nextTick (task) {
       task()
     })
     nextTickQueued = true
+  }
+}
+
+export function nextAnimationFrame (task) {
+  if (!nextFrameQueued) {
+    requestFrame(() => {
+      // set this before executing the task so the task can set it back to true if needed
+      nextFrameQueued = false
+      task()
+    })
+    nextFrameQueued = true
   }
 }
 

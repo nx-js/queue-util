@@ -1,4 +1,4 @@
-import { nextTick, nextIdlePeriod } from './timers'
+import { nextTick, nextAnimationFrame, nextIdlePeriod } from './timers'
 import { queues, priorities } from './priorities'
 
 const TARGET_FPS = 60
@@ -8,8 +8,10 @@ let lastRun
 export function queueTaskProcessing (priority) {
   if (priority === priorities.CRITICAL) {
     nextTick(runQueuedCriticalTasks)
-  } else {
-    nextIdlePeriod(runQueuedIdleTasks)
+  } else if (priority === priorities.HIGH) {
+    nextAnimationFrame(runQueuedHighTasks)
+  } else if (priority === priorities.LOW) {
+    nextIdlePeriod(runQueuedLowTasks)
   }
 }
 
@@ -24,9 +26,27 @@ function processCriticalQueue (queue) {
   queue.clear()
 }
 
-function runQueuedIdleTasks () {
-  lastRun = lastRun || Date.now()
+function runQueuedHighTasks () {
+  // the env is not idle
+  // only allow it to run for time remaining part of the current period
+  lastRun = lastRun || performance.now()
 
+  const timeRemaining = processIdleQueues(priorities.HIGH)
+
+  // if there is free time remaining there are no more tasks to run
+  if (timeRemaining) {
+    lastRun = undefined
+  } else {
+    nextAnimationFrame(runQueuedHighTasks)
+    lastRun = performance.now()
+  }
+}
+
+function runQueuedLowTasks () {
+  // the env is idle, allow the handler to run for a full period
+  lastRun = performance.now()
+
+  // first check if there are pending high prio tasks
   let timeRemaining = processIdleQueues(priorities.HIGH)
 
   if (timeRemaining) {
@@ -37,8 +57,8 @@ function runQueuedIdleTasks () {
   if (timeRemaining) {
     lastRun = undefined
   } else {
-    nextIdlePeriod(runQueuedIdleTasks)
-    lastRun = Date.now()
+    nextIdlePeriod(runQueuedLowTasks)
+    lastRun = performance.now()
   }
 }
 
@@ -57,7 +77,7 @@ function processIdleQueues (priority) {
 function processIdleQueue (queue) {
   const iterator = queue[Symbol.iterator]()
   let task = iterator.next()
-  while (Date.now() - lastRun < TARGET_INTERVAL) {
+  while (performance.now() - lastRun < TARGET_INTERVAL) {
     if (task.done) {
       return true
     }

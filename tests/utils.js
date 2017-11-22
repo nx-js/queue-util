@@ -1,16 +1,12 @@
 const HEAVY_INTERVAL = 10
-
-export function spy (fn) {
-  const spyFn = () => {
-    fn()
-    spyFn.callCount++
-  }
-  spyFn.callCount = 0
-  return spyFn
-}
+const originalRAF = window.requestAnimationFrame
+const originalRIC = window.requestIdleCallback
 
 export function beforeNextFrame () {
-  return new Promise(requestAnimationFrame)
+  const nextFrame = (typeof requestAnimationFrame === 'function')
+    ? requestAnimationFrame
+    : setTimeout
+  return new Promise(nextFrame)
 }
 
 export function heavyCalculation () {
@@ -22,4 +18,20 @@ export function heavyCalculation () {
     parent.removeChild(child)
   }
   return Date.now() - start
+}
+
+export function removeRAF () {
+  window.requestAnimationFrame = undefined
+}
+
+export function restoreRAF () {
+  window.requestAnimationFrame = originalRAF
+}
+
+export function removeRIC () {
+  window.requestIdleCallback = undefined
+}
+
+export function restoreRIC () {
+  window.requestIdleCallback = originalRIC
 }

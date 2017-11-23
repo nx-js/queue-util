@@ -64,7 +64,6 @@ function processIdleQueue (queue, startTime) {
     if (task.done) {
       return true
     }
-    // run the task
     runTask(task.value)
     queue.delete(task.value)
     task = iterator.next()

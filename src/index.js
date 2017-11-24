@@ -1,2 +1,2 @@
-export { Queue } from './queue'
-export { priorities } from './priorities'
+export { Queue } from './Queue'
+export { priorities } from './queues'

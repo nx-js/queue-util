@@ -1,5 +1,5 @@
-import { nextTick, nextAnimationFrame, nextIdlePeriod } from './schedulers'
-import { queues, priorities } from './priorities'
+import { nextTick, nextAnimationFrame, nextIdlePeriod } from './timers'
+import { queues, priorities } from './queues'
 
 const TARGET_FPS = 60
 const TARGET_INTERVAL = 1000 / TARGET_FPS

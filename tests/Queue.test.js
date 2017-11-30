@@ -1,6 +1,9 @@
-import { expect } from 'chai'
+import chai, { expect } from 'chai'
+import dirtyChai from 'dirty-chai'
 import { Queue, priorities } from '@nx-js/queue-util'
 import { spy, beforeNextFrame } from './utils'
+
+chai.use(dirtyChai)
 
 describe('Queue', () => {
   it('should throw on invalid priority argument', () => {
@@ -27,9 +30,9 @@ describe('Queue', () => {
     it('should return with a boolean indication if the task is in the queue', () => {
       const queue = new Queue(priorities.CRITICAL)
       const task = () => {}
-      expect(queue.has(task)).to.be.false
+      expect(queue.has(task)).to.be.false()
       queue.add(task)
-      expect(queue.has(task)).to.be.true
+      expect(queue.has(task)).to.be.true()
     })
   })
 
@@ -44,20 +47,20 @@ describe('Queue', () => {
     it('should add the task to the queue', () => {
       const queue = new Queue(priorities.HIGH)
       const task = () => {}
-      expect(queue.has(task)).to.be.false
+      expect(queue.has(task)).to.be.false()
       queue.add(task)
-      expect(queue.has(task)).to.be.true
+      expect(queue.has(task)).to.be.true()
     })
 
     it('should ignore duplicate entries', () => {
       const queue = new Queue(priorities.HIGH)
       const task = () => {}
-      expect(queue.has(task)).to.be.false
+      expect(queue.has(task)).to.be.false()
       queue.add(task)
       queue.add(task)
       queue.add(task)
       expect(queue.size).to.eql(1)
-      expect(queue.has(task)).to.be.true
+      expect(queue.has(task)).to.be.true()
     })
   })
 
@@ -66,9 +69,9 @@ describe('Queue', () => {
       const queue = new Queue(priorities.LOW)
       const task = () => {}
       queue.add(task)
-      expect(queue.has(task)).to.be.true
+      expect(queue.has(task)).to.be.true()
       queue.delete(task)
-      expect(queue.has(task)).to.be.false
+      expect(queue.has(task)).to.be.false()
     })
   })
 
@@ -85,7 +88,7 @@ describe('Queue', () => {
 
     it('should throw on set operations', () => {
       const queue = new Queue(priorities.CRITICAL)
-      expect(() => queue.size = 12).to.throw()
+      expect(() => (queue.size = 12)).to.throw()
     })
   })
 
@@ -97,7 +100,7 @@ describe('Queue', () => {
       expect(queue.size).to.eql(1)
       queue.clear()
       expect(queue.size).to.eql(0)
-      expect(queue.has(task)).to.be.false
+      expect(queue.has(task)).to.be.false()
     })
   })
 

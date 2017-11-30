@@ -1,4 +1,4 @@
-import { queues, priorities, validatePriority } from './queues'
+import { queues, validatePriority } from './queues'
 import { queueTaskProcessing, runTask } from './scheduling'
 
 const QUEUE = Symbol('task queue')

@@ -1,7 +1,14 @@
 // remove requestAnimationFrame and requestIdleCallback before the queue schedulers load
 import { expect } from 'chai'
 import { Queue, priorities } from '@nx-js/queue-util'
-import { removeRIC, restoreRIC, removeRAF, restoreRAF, beforeNextFrame, heavyCalculation } from './utils'
+import {
+  removeRIC,
+  restoreRIC,
+  removeRAF,
+  restoreRAF,
+  beforeNextFrame,
+  heavyCalculation
+} from './utils'
 
 describe('environments', () => {
   describe('NodeJS', () => {
@@ -64,7 +71,6 @@ describe('environments', () => {
         lowQueue.add(() => heavyCalculation())
       }
 
-      const start = Date.now()
       await beforeNextFrame()
       expect(highQueue.size).to.not.eql(0)
       expect(lowQueue.size).to.eql(10)
@@ -132,7 +138,6 @@ describe('environments', () => {
         lowQueue.add(() => heavyCalculation())
       }
 
-      const start = Date.now()
       await beforeNextFrame()
       expect(highQueue.size).to.not.eql(0)
       expect(lowQueue.size).to.eql(10)

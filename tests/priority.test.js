@@ -68,7 +68,6 @@ describe('priorities and processing', () => {
       lowQueue.add(() => heavyCalculation())
     }
 
-    const start = Date.now()
     await beforeNextFrame()
     expect(highQueue.size).to.not.eql(0)
     expect(lowQueue.size).to.eql(10)

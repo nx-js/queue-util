@@ -45,6 +45,7 @@
     "buble": "^0.15.2",
     "chai": "^4.1.1",
     "coveralls": "^2.13.1",
+    "dirty-chai": "^2.0.1",
     "karma": "^1.7.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",

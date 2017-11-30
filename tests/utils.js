@@ -12,9 +12,10 @@ export function spy (fn) {
 }
 
 export function beforeNextFrame () {
-  const nextFrame = (typeof requestAnimationFrame === 'function')
-    ? requestAnimationFrame
-    : setTimeout
+  const nextFrame =
+    typeof requestAnimationFrame === 'function'
+      ? requestAnimationFrame
+      : setTimeout
   return new Promise(nextFrame)
 }
 

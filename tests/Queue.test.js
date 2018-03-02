@@ -119,6 +119,24 @@ describe('Queue', () => {
       expect(taskSpy.callCount).to.eql(1)
     })
 
+    it('should not start again until start is called', async () => {
+      const queue = new Queue(priorities.CRITICAL)
+      const taskSpy = spy(() => {})
+      queue.add(taskSpy)
+      await queue.processing()
+      expect(queue.size).to.eql(0)
+      expect(taskSpy.callCount).to.eql(1)
+      queue.stop()
+      queue.add(taskSpy)
+      await beforeNextFrame()
+      expect(queue.size).to.eql(1)
+      expect(taskSpy.callCount).to.eql(1)
+      queue.start()
+      await beforeNextFrame()
+      expect(queue.size).to.eql(0)
+      expect(taskSpy.callCount).to.eql(2)
+    })
+
     it('should have the same effect on multiple calls', async () => {
       const queue = new Queue(priorities.CRITICAL)
       const taskSpy = spy(() => {})

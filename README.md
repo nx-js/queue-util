@@ -67,6 +67,7 @@ Queue instances can be created with the `Queue` constructor. The constructor req
 
 The following priorities are exported on the `priorities` object.
 
+- `priorities.SYNC`: Tasks are executed right away synchronously.
 - `priorities.CRITICAL`: Tasks are executed ASAP (always before the next repaint in the browser).
 - `priorities.HIGH`: Tasks are executed when there is free time and no more pending critical tasks.
 - `priorities.LOW`: Tasks are executed when there is free time and no more pending critical or high prio tasks.
@@ -91,13 +92,13 @@ Clears every task from the queue without executing them.
 
 Executes every task in the queue, then clears the queue.
 
-### queue.start()
-
-Starts the - priority based - automatic task execution of the queue. The queue is automatically started after creation.
-
 ### queue.stop()
 
 Stops the automatic task execution of the queue.
+
+### queue.start()
+
+Starts the - priority based - automatic task execution of the queue. The queue is automatically started after creation.
 
 ### promise = queue.processing()
 

@@ -6,14 +6,6 @@ import { spy, beforeNextFrame } from './utils'
 chai.use(dirtyChai)
 
 describe('Queue', () => {
-  it('should throw on invalid priority argument', () => {
-    expect(() => new Queue()).to.throw(Error)
-    expect(() => new Queue(null)).to.throw(Error)
-    expect(() => new Queue(priorities.CRITICAL)).to.not.throw()
-    expect(() => new Queue(priorities.HIGH)).to.not.throw()
-    expect(() => new Queue(priorities.LOW)).to.not.throw()
-  })
-
   it('should auto run the added tasks', async () => {
     const queue = new Queue(priorities.CRITICAL)
     const taskSpy1 = spy(() => {})
@@ -37,19 +29,22 @@ describe('Queue', () => {
   })
 
   describe('add', () => {
-    it('should throw on non function first argument', () => {
-      const queue = new Queue(priorities.HIGH)
-      expect(() => queue.add()).to.throw(TypeError)
-      expect(() => queue.add({})).to.throw(TypeError)
-      expect(() => queue.add(null)).to.throw(TypeError)
-    })
-
     it('should add the task to the queue', () => {
       const queue = new Queue(priorities.HIGH)
-      const task = () => {}
+      const task = spy(() => {})
       expect(queue.has(task)).to.be.false()
       queue.add(task)
       expect(queue.has(task)).to.be.true()
+      expect(task.callCount).to.eql(0)
+    })
+
+    it('should run the task if it has a SYNC priority', () => {
+      const queue = new Queue(priorities.SYNC)
+      const task = spy(() => {})
+      queue.add(task)
+      expect(task.callCount).to.eql(1)
+      queue.add(task)
+      expect(task.callCount).to.eql(2)
     })
 
     it('should ignore duplicate entries', () => {
@@ -68,6 +63,16 @@ describe('Queue', () => {
     it('should delete the task from the queue', () => {
       const queue = new Queue(priorities.LOW)
       const task = () => {}
+      queue.add(task)
+      expect(queue.has(task)).to.be.true()
+      queue.delete(task)
+      expect(queue.has(task)).to.be.false()
+    })
+
+    it('should delete async tasks from the queue', () => {
+      const queue = new Queue(priorities.SYNC)
+      const task = () => {}
+      queue.stop()
       queue.add(task)
       expect(queue.has(task)).to.be.true()
       queue.delete(task)
@@ -152,14 +157,39 @@ describe('Queue', () => {
       expect(queue.size).to.eql(1)
       expect(taskSpy.callCount).to.eql(1)
     })
+
+    it('should queue tasks instead of discarding them with SYNC priority', () => {
+      const queue = new Queue(priorities.SYNC)
+      const taskSpy = spy(() => {})
+      expect(queue.size).to.eql(0)
+      queue.stop()
+      queue.add(taskSpy)
+      queue.add(taskSpy)
+      expect(queue.size).to.eql(1)
+      expect(taskSpy.callCount).to.eql(0)
+    })
   })
 
   describe('start', () => {
-    it('should start the automatic queue processing', async () => {
+    it('should start the automatic queue processing after a stop', async () => {
       const queue = new Queue(priorities.CRITICAL)
       const taskSpy = spy(() => {})
       queue.add(taskSpy)
       queue.stop()
+      await beforeNextFrame()
+      expect(queue.size).to.eql(1)
+      expect(taskSpy.callCount).to.eql(0)
+      queue.start()
+      await queue.processing()
+      expect(queue.size).to.eql(0)
+      expect(taskSpy.callCount).to.eql(1)
+    })
+
+    it('should start the automatic queue processing after a sleep', async () => {
+      const queue = new Queue(priorities.CRITICAL)
+      const taskSpy = spy(() => {})
+      queue.add(taskSpy)
+      queue.sleep()
       await beforeNextFrame()
       expect(queue.size).to.eql(1)
       expect(taskSpy.callCount).to.eql(0)
@@ -183,6 +213,44 @@ describe('Queue', () => {
       await queue.processing()
       expect(queue.size).to.eql(0)
       expect(taskSpy.callCount).to.eql(1)
+    })
+
+    it('should process tasks with SYNC priority', async () => {
+      const queue = new Queue(priorities.SYNC)
+      const taskSpy = spy(() => {})
+      expect(queue.size).to.eql(0)
+      queue.stop()
+      queue.add(taskSpy)
+      queue.add(taskSpy)
+      await beforeNextFrame()
+      expect(queue.size).to.eql(1)
+      expect(taskSpy.callCount).to.eql(0)
+      queue.start()
+      expect(queue.size).to.eql(0)
+      expect(taskSpy.callCount).to.eql(1)
+    })
+  })
+
+  describe('sleep', () => {
+    it('should stop the automatic queue processing', async () => {
+      const queue = new Queue(priorities.CRITICAL)
+      const taskSpy = spy(() => {})
+      expect(queue.size).to.eql(0)
+      queue.add(taskSpy)
+      queue.sleep()
+      await beforeNextFrame()
+      expect(queue.size).to.eql(1)
+      expect(taskSpy.callCount).to.eql(0)
+    })
+
+    it('should discard new tasks', async () => {
+      const queue = new Queue(priorities.CRITICAL)
+      const taskSpy = spy(() => {})
+      queue.sleep()
+      queue.add(taskSpy)
+      expect(queue.size).to.eql(0)
+      await beforeNextFrame()
+      expect(taskSpy.callCount).to.eql(0)
     })
   })
 

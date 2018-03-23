@@ -9,7 +9,7 @@ export function queueTaskProcessing (priority) {
     nextTick(runQueuedCriticalTasks)
   } else if (priority === priorities.HIGH) {
     nextAnimationFrame(runQueuedHighTasks)
-  } else {
+  } else if (priority === priorities.LOW) {
     nextIdlePeriod(runQueuedLowTasks)
   }
 }

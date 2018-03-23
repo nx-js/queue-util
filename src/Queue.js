@@ -1,12 +1,14 @@
-import { queues, validatePriority } from './queues'
+import { queues, priorities } from './queues'
 import { queueTaskProcessing, runTask } from './scheduling'
 
 const QUEUE = Symbol('task queue')
+const IS_STOPPED = Symbol('is stopped')
+const IS_SLEEPING = Symbol('is sleeping')
 
 export class Queue {
-  constructor (priority) {
-    this.priority = validatePriority(priority)
+  constructor (priority = priorities.SYNC) {
     this[QUEUE] = new Set()
+    this.priority = priority
     queues[this.priority].push(this[QUEUE])
   }
 
@@ -15,14 +17,18 @@ export class Queue {
   }
 
   add (task) {
-    if (typeof task !== 'function') {
-      throw new TypeError(
-        `${task} can not be added to the queue. Only functions can be added.`
-      )
+    if (this[IS_SLEEPING]) {
+      return
     }
-    const queue = this[QUEUE]
-    queue.add(task)
-    queueTaskProcessing(this.priority)
+    if (this.priority === priorities.SYNC && !this[IS_STOPPED]) {
+      task()
+    } else {
+      const queue = this[QUEUE]
+      queue.add(task)
+    }
+    if (!this[IS_STOPPED]) {
+      queueTaskProcessing(this.priority)
+    }
   }
 
   delete (task) {
@@ -31,11 +37,17 @@ export class Queue {
 
   start () {
     const queue = this[QUEUE]
-    const priorityQueues = queues[this.priority]
-    if (priorityQueues.indexOf(queue) === -1) {
-      priorityQueues.push(queue)
+    if (this.priority === priorities.SYNC) {
+      this.process()
+    } else {
+      const priorityQueues = queues[this.priority]
+      if (priorityQueues.indexOf(queue) === -1) {
+        priorityQueues.push(queue)
+      }
+      queueTaskProcessing(this.priority)
     }
-    queueTaskProcessing(this.priority)
+    this[IS_STOPPED] = false
+    this[IS_SLEEPING] = false
   }
 
   stop () {
@@ -45,6 +57,12 @@ export class Queue {
     if (index !== -1) {
       priorityQueues.splice(index, 1)
     }
+    this[IS_STOPPED] = true
+  }
+
+  sleep () {
+    this.stop()
+    this[IS_SLEEPING] = true
   }
 
   clear () {

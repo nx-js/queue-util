@@ -5,7 +5,7 @@ const QUEUE = Symbol('task queue')
 const IS_STOPPED = Symbol('is stopped')
 const IS_SLEEPING = Symbol('is sleeping')
 
-export class Queue {
+export default class Queue {
   constructor (priority = priorities.SYNC) {
     this[QUEUE] = new Set()
     this.priority = priority

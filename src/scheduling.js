@@ -26,7 +26,7 @@ function processCriticalQueue (queue) {
 }
 
 function runQueuedHighTasks () {
-  const startTime = performance.now()
+  const startTime = Date.now()
   const isEmpty = processIdleQueues(priorities.HIGH, startTime)
   // there are more tasks to run in the next cycle
   if (!isEmpty) {
@@ -35,7 +35,7 @@ function runQueuedHighTasks () {
 }
 
 function runQueuedLowTasks () {
-  const startTime = performance.now()
+  const startTime = Date.now()
   const isEmpty = processIdleQueues(priorities.LOW, startTime)
   // there are more tasks to run in the next cycle
   if (!isEmpty) {
@@ -60,7 +60,7 @@ function processIdleQueues (priority, startTime) {
 function processIdleQueue (queue, startTime) {
   const iterator = queue[Symbol.iterator]()
   let task = iterator.next()
-  while (performance.now() - startTime < TARGET_INTERVAL) {
+  while (Date.now() - startTime < TARGET_INTERVAL) {
     if (task.done) {
       return true
     }
